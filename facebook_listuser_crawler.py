@@ -3,7 +3,6 @@ import re
 from pprint import pprint
 import requests
 from datetime import datetime
-
 from facebook_user_crawler import FbBaseCrawler
 
 class FbUserListCrawler(FbBaseCrawler):

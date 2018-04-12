@@ -1,8 +1,5 @@
-import json
-from pprint import pprint
 import requests
 from bs4 import BeautifulSoup as BS
-# import facebook
 
 class FbBaseCrawler(object):
     
