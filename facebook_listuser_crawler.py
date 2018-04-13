@@ -7,6 +7,7 @@ from facebook_user_crawler import FbBaseCrawler
 
 class FbUserListCrawler(FbBaseCrawler):
     
+    # Default crawl from the first 10 pages
     pages_crawl = 10
     
     def __init__(self,keyword,email,password):
@@ -79,27 +80,6 @@ class FbUserListCrawler(FbBaseCrawler):
             data['name'] = self.user_list.get(user_fbid,'')
             parsed_data.append(data)
         return parsed_data
-    
-    def _data_payload(self,profile_id):
-        return {
-            '__user'  : self._fbuser_id,
-            '__a'     : '1',
-            '__req'   : 'bg',
-            '__be'    : '1',
-            '__pc'    : 'PHASED:DEFAULT',
-            'fb_dtsg' : 'AQE7QLwM5515:AQG5ETFHYJHw',
-            '__spin_b': 'trunk',
-        }
-    
-    def _param_query(self,profile_id):
-        return {
-            'viewer_id'     : '100003307297044', #self._user_fbid,
-            'profile_id'    : '%s'%profile_id, #profile_id,
-            'dom_section_id': 'u_fetchstream_2_0',
-            'section'       : 'overview',
-            'dpr'           : '1',
-            'lst'           : '%s:%s:1523033687'%(self._fbuser_id,profile_id)
-        }
     
     def _extract_contract_data_from_html(self,tree):
         email = tree.select_one("span._50f9._50f7") or tree.select_one("span._c24._2ieq a[href^='mailto']")
