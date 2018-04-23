@@ -1,5 +1,4 @@
 import json
-import re
 from pprint import pprint
 import requests
 from datetime import datetime
@@ -52,7 +51,6 @@ class FbUserListCrawler(FbBaseCrawler):
     
     def crawl_fb_info(self,ids):
         parsed_data = []
-        # ids = ['100002702009223']
         for user_fbid in ids:
             resp = self._get('https://www.facebook.com/{profile_id}/about?lst={fb_id}%3A{profile_id}%3A{timestamp}&section=overview'.format(**{
                 'profile_id':user_fbid,
