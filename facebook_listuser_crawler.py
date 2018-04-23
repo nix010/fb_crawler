@@ -16,41 +16,43 @@ class FbUserListCrawler(FbBaseCrawler):
         self._user = email
         self._pass = password
         self._next_page_params = {}
-
+        
         pass
     
     def crawl_now(self):
         if not self._login_fb():
-            return print('Can\'t login ! pls check user and password')
+            print('Can\'t login ! pls check user and password')
+            return
         user_list = {}
         for i in range(self.pages_crawl):
-
+            
             api_url = 'https://www.facebook.com/ajax/pagelet/generic.php/BrowseScrollingSetPagelet'
             resp = self._get(api_url, params=self._search_keyword_payload(keyword=self._keyword))
-            json_data = json.loads(resp.content[9:])
-
+            json_data = json.loads(resp.text[9:])
+            
             self._next_page_params = self._search_cursor_dict(json_data.get('jsmods', {}).get('require'))
-
+            
             if json_data.get('payload') is None or json_data.get('payload') == []:
                 print ('response-data-error')
                 return
             _user_list = self._extract_post_info(json_data)
             print(_user_list)
-
+            
             print('Page %s completed' % (str(i + 1)))
             if not isinstance(self._next_page_params, dict):
                 print('Stop of page %d' % (i+1))
                 print('next-page-error')
                 break
             user_list = {**user_list,**_user_list}
-
+        
         self.user_list = user_list
-
+        
         user_ids = list(user_list.keys())
         return self.crawl_fb_info(user_ids)
     
     def crawl_fb_info(self,ids):
         parsed_data = []
+        # ids = ['100002702009223']
         for user_fbid in ids:
             resp = self._get('https://www.facebook.com/{profile_id}/about?lst={fb_id}%3A{profile_id}%3A{timestamp}&section=overview'.format(**{
                 'profile_id':user_fbid,
@@ -65,16 +67,14 @@ class FbUserListCrawler(FbBaseCrawler):
                 print('Id error %s' % user_fbid)
                 continue
             tree = self.parser(html)
-            locator = tree.find(lambda x: x.name=='script' and x.text[64:72]=="is_last:")
-            id_attr = re.findall("{container_id:\"(.*?)\"}},", locator.text)
-            if len(id_attr) == 0:
+
+            
+            locator = tree.find(lambda x: x.name == 'code' and x.string.startswith(' <ul class="uiList'))
+            if not locator:
                 continue
-            id_attr = id_attr[0]
-            html = tree.select_one('#%s'%id_attr)
-            if not html:
-                continue
-            _html = str(html).replace(' --></code>','')
-            html = _html.replace('<code id="%s"><!-- '%id_attr,'')
+            
+            html = locator.string
+            
             tree = self.parser(html)
             data = self._extract_contract_data_from_html(tree)
             data['name'] = self.user_list.get(user_fbid,'')
@@ -182,10 +182,11 @@ class FbUserListCrawler(FbBaseCrawler):
 
 keyword = input('What industry do you want to find ? : ')
 keyword = keyword.strip()
+
 crawler = FbUserListCrawler(
     keyword=keyword,
-    email='yyy',
-    password='xxx',
+    email='xxx',
+    password='yyy',
 )
 ids = crawler.crawl_now()
 pprint(ids)
